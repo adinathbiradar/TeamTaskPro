@@ -4,29 +4,36 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = express();
-const PORT = 5500;
+const PORT = process.env.PORT || 5500; // ✅ use Render's port if available
 
-// app.use(cors());
-app.use(cors({ origin: "*" })); 
+// ✅ Allow only Netlify frontend to access backend
+app.use(
+  cors({
+    origin: "https://teamtaskpro.netlify.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-
+// Routes
 const employeeRoutes = require("./routes/employeeRoutes");
 const taskRoutes = require("./routes/taskRoutes");
-
-
 
 app.use("/api/employees", employeeRoutes);
 app.use("/api/tasks", taskRoutes);
 
-
+// ✅ MongoDB connection (already correct)
 mongoose
-  .connect(
-    "mongodb+srv://adinathbiradar77:JNY4uDtYvkGsY36z@cluster0.3meowad.mongodb.net/teamtaskpro?retryWrites=true&w=majority&appName=Cluster0"
-  )
-  .then(() => console.log("MongoDB is connected"))
-  .catch((err) => console.log("MongoDB is not connected", err.message));
+  .connect(process.env.MONGO_URI) // move URI to .env for security
+  .then(() => console.log("✅ MongoDB is connected"))
+  .catch((err) => console.log("❌ MongoDB connection error:", err.message));
+
+app.get("/", (req, res) => {
+  res.send("🚀 TeamTaskPro Backend is running!");
+});
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
